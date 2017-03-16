@@ -2,10 +2,7 @@
 #ifndef _AI-THINKER_RGBW_BULB_
 #define _AI-THINKER_RGBW_BULB_
 
-#include <ESP8266WiFi.h>    // https://github.com/esp8266/Arduino
 #include <my9291.h>         // https://github.com/xoseperez/my9291
-#include <PubSubClient.h>   // https://github.com/knolleary/pubsubclient
-#include <ArduinoJson.h>    // https://github.com/bblanchon/ArduinoJson
 #include "config.h"
 
 #define MY9291_DI_PIN       13
