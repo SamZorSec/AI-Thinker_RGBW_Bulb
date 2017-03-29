@@ -7,19 +7,20 @@
 #include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino
 #include <PubSubClient.h>         // https://github.com/knolleary/pubsubclient
 #include <ArduinoJson.h>          // https://github.com/bblanchon/ArduinoJson
+#include <ArduinoOTA.h>
 #include "AI-Thinker_RGBW_Bulb.h"
 
 #if defined(DEBUG_TELNET)
-  WiFiServer  telnetServer(23);
-  WiFiClient  telnetClient;
-  #define     DEBUG_PRINT(x)    telnetClient.print(x)
-  #define     DEBUG_PRINTLN(x)  telnetClient.println(x)
+WiFiServer  telnetServer(23);
+WiFiClient  telnetClient;
+#define     DEBUG_PRINT(x)    telnetClient.print(x)
+#define     DEBUG_PRINTLN(x)  telnetClient.println(x)
 #elif defined(DEBUG_SERIAL)
-  #define     DEBUG_PRINT(x)    Serial.print(x)
-  #define     DEBUG_PRINTLN(x)  Serial.println(x)
+#define     DEBUG_PRINT(x)    Serial.print(x)
+#define     DEBUG_PRINTLN(x)  Serial.println(x)
 #else
-  #define     DEBUG_PRINT(x)
-  #define     DEBUG_PRINTLN(x)
+#define     DEBUG_PRINT(x)
+#define     DEBUG_PRINTLN(x)
 #endif
 
 AIRGBWBulb    bulb;
@@ -49,6 +50,62 @@ void handleTelnet(void) {
 #endif
 
 ///////////////////////////////////////////////////////////////////////////
+//   OTA
+///////////////////////////////////////////////////////////////////////////
+#if defined(OTA)
+void setupOTA() {
+#if defined(OTA_HOSTNAME)
+  ArduinoOTA.setHostname(OTA_HOSTNAME);
+  DEBUG_PRINT(F("INFO: OTA hostname sets to: "));
+  DEBUG_PRINTLN(OTA_HOSTNAME);
+#endif
+
+#if defined(OTA_PORT)
+  ArduinoOTA.setPort(OTA_PORT);
+  DEBUG_PRINT(F("INFO: OTA port sets to: "));
+  DEBUG_PRINTLN(OTA_PORT);
+#endif
+
+#if defined(OTA_PASSWORD)
+  ArduinoOTA.setPassword((const char *)OTA_PASSWORD);
+  DEBUG_PRINT(F("INFO: OTA password sets to: "));
+  DEBUG_PRINTLN(OTA_PASSWORD);
+#endif
+
+  ArduinoOTA.onStart([]() {
+    DEBUG_PRINTLN(F("INFO: OTA starts"));
+  });
+  ArduinoOTA.onEnd([]() {
+    DEBUG_PRINTLN(F("INFO: OTA ends"));
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    DEBUG_PRINT(F("INFO: OTA progresses: "));
+    DEBUG_PRINT(progress / (total / 100));
+    DEBUG_PRINTLN(F("%"));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    DEBUG_PRINT(F("ERROR: OTA error: "));
+    DEBUG_PRINTLN(error);
+    if (error == OTA_AUTH_ERROR)
+      DEBUG_PRINTLN(F("ERROR: OTA auth failed"));
+    else if (error == OTA_BEGIN_ERROR)
+      DEBUG_PRINTLN(F("ERROR: OTA begin failed"));
+    else if (error == OTA_CONNECT_ERROR)
+      DEBUG_PRINTLN(F("ERROR: OTA connect failed"));
+    else if (error == OTA_RECEIVE_ERROR)
+      DEBUG_PRINTLN(F("ERROR: OTA receive failed"));
+    else if (error == OTA_END_ERROR)
+      DEBUG_PRINTLN(F("ERROR: OTA end failed"));
+  });
+  ArduinoOTA.begin();
+}
+
+void handleOTA() {
+  ArduinoOTA.handle();
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////
 //   MQTT
 ///////////////////////////////////////////////////////////////////////////
 
@@ -64,6 +121,10 @@ void setup() {
   telnetServer.setNoDelay(true);
 #endif
 
+#if defined(OTA)
+  setupOTA();
+#endif
+
   bulb.init();
 }
 
@@ -74,6 +135,12 @@ void loop() {
 #endif
 
   yield();
-  
+
+#if defined(OTA)
+  handleOTA();
+#endif
+
+  yield();
+
   bulb.loop();
 }
