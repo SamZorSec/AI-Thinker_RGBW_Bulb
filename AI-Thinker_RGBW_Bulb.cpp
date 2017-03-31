@@ -64,7 +64,9 @@ bool AIRGBWBulb::setBrightness(uint8_t p_brightness) {
 //   RGB COLOR
 ///////////////////////////////////////////////////////////////////////////
 Color AIRGBWBulb::getColor(void) {
-  return m_color;
+  my9291_color_t my9291Color = m_my9291->getColor();
+  Color color = {my9291Color.red, my9291Color.green, my9291Color.blue};
+  return color;
 }
 
 bool AIRGBWBulb::setColor() {
@@ -105,7 +107,7 @@ bool AIRGBWBulb::setColor(uint8_t p_red, uint8_t p_green, uint8_t p_blue) {
 //   WHITE COLOR
 ///////////////////////////////////////////////////////////////////////////
 uint8_t AIRGBWBulb::getWhite(void) {
-  return m_white;
+  return m_my9291->getColor().white;
 }
 
 bool AIRGBWBulb::setWhite(uint8_t p_white) {
