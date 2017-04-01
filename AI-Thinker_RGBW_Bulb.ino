@@ -253,13 +253,20 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
     if (root.containsKey("white_value")) {
       if (bulb.setWhite(root["white_value"])) {
         DEBUG_PRINT(F("INFO: White changed to: "));
-        DEBUG_PRINTLN(bulb.getWhite());
+        DEBUG_PRINTLN(bulb.getColor().white);
+        cmd = CMD_STATE_CHANGED;
+      }
+    }
+
+    if (root.containsKey("color_temp")) {
+      if (bulb.setColorTemperature(root["color_temp"])) {
+        DEBUG_PRINT(F("INFO: Color temperature changed to: "));
+        DEBUG_PRINTLN(bulb.getColorTemperature());
         cmd = CMD_STATE_CHANGED;
       }
     }
   }
 }
-
 
 /*
   Function called to subscribe to a MQTT topic
@@ -311,6 +318,7 @@ void connectToMQTT() {
         root["brightness"] = true;
         root["rgb"] = true;
         root["white_value"] = true;
+        root["color_temp"] = true;
         root.printTo(jsonBuffer, sizeof(jsonBuffer));
         publishToMQTT(MQTT_CONFIG_TOPIC, jsonBuffer);
 #endif
@@ -348,7 +356,8 @@ void handleCMD() {
       color["r"] = bulb.getColor().red;
       color["g"] = bulb.getColor().green;
       color["b"] = bulb.getColor().blue;
-      root["white_value"] = bulb.getWhite();
+      root["white_value"] = bulb.getColor().white;
+      root["color_temp"] = bulb.getColorTemperature();
       root.printTo(jsonBuffer, sizeof(jsonBuffer));
       publishToMQTT(MQTT_STATE_TOPIC, jsonBuffer);
       break;
