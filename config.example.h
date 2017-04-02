@@ -22,14 +22,13 @@
 #if defined(MQTT_HOME_ASSISTANT_SUPPORT)
 // template: <discovery prefix>/light/<chip ID>/config, status, state or set
 #define MQTT_CONFIG_TOPIC_TEMPLATE  "%s/light/%s/config"
-#define MQTT_STATE_TOPIC_TEMPLATE   "%s/light/%s/state"
-#define MQTT_COMMAND_TOPIC_TEMPLATE "%s/light/%s/set"
-#define MQTT_STATUS_TOPIC_TEMPLATE  "%s/light/%s/status" // MQTT connection: alive/dead
 #else
+
+#endif
+
 #define MQTT_STATE_TOPIC_TEMPLATE   "%s/rgbw/state"
 #define MQTT_COMMAND_TOPIC_TEMPLATE "%s/rgbw/set"
 #define MQTT_STATUS_TOPIC_TEMPLATE  "%s/rgbw/status" // MQTT connection: alive/dead
-#endif
 
 #define MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX  "homeassistant"
 #define MQTT_STATE_ON_PAYLOAD   "ON"
@@ -41,7 +40,7 @@
 //   DEBUG
 ///////////////////////////////////////////////////////////////////////////
 //#define DEBUG_TELNET
-#define DEBUG_SERIAL
+//#define DEBUG_SERIAL
 
 ///////////////////////////////////////////////////////////////////////////
 //   OTA

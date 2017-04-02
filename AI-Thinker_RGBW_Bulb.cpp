@@ -12,14 +12,14 @@ void AIRGBWBulb::init(void) {
   // sets initial color to white (255, 255, 255)
   setColor(255, 255, 255);
 
-  // sets initial color temperature to 500 (Home Assistant max value)
-  setColorTemperature(500);
-
   // sets initial brightness to 100% (255)
   setBrightness(255);
 
+  // sets initial color temperature to 500 (Home Assistant max value)
+  setColorTemperature(COLOR_TEMP_HA_MIN_IN_MIRED); // COLOR_TEMP_HA_MIN_IN_MIRED: white point
+
   // sets initial white to 100% (255)
-  setWhite(255);
+  //setWhite(255);
 
   // sets initial state to false
   m_my9291->setState(false);
@@ -80,9 +80,6 @@ bool AIRGBWBulb::setColor(uint8_t p_red, uint8_t p_green, uint8_t p_blue) {
   m_color.green = p_green;
   m_color.blue = p_blue;
 
-  // switches off the white leds
-  m_color.white = 0;
-
   return setColor();
 }
 
@@ -91,6 +88,9 @@ bool AIRGBWBulb::setColor() {
   uint8_t red = map(m_color.red, 0, 255, 0, m_brightness);
   uint8_t green = map(m_color.green, 0, 255, 0, m_brightness);
   uint8_t blue = map(m_color.blue, 0, 255, 0, m_brightness);
+
+  // switches off the white leds
+  m_color.white = 0;
 
   // sets the new color
   m_my9291->setColor((my9291_color_t) {
@@ -149,7 +149,7 @@ uint16_t AIRGBWBulb::getColorTemperature(void) {
 
 bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
   // checks if the value is equal to the actual color temperature
-  if (p_colorTemperature == m_colorTemperature)
+  if (p_colorTemperature < COLOR_TEMP_HA_MIN_IN_MIRED || p_colorTemperature == m_colorTemperature || p_colorTemperature > COLOR_TEMP_HA_MAX_IN_MIRED)
     return false;
 
   // saves the new white value
@@ -158,14 +158,15 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
   // https://fr.wikipedia.org/wiki/Mired
   // http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
   // M = 1000000 / T <> T [kelvin] = 1000000 / M [mired]
-  int tmpKelvin = 1000000 / m_colorTemperature;
+  //    int tmpKelvin = 1000000 / m_colorTemperature;
+  //
+  //    if (tmpKelvin < 1000) {
+  //      tmpKelvin = 1000;
+  //    } else if (tmpKelvin > 40000) {
+  //      tmpKelvin = 40000;
+  //    }
 
-  if (tmpKelvin < 1000) {
-    tmpKelvin = 1000;
-  } else if (tmpKelvin > 40000) {
-    tmpKelvin = 40000;
-  }
-
+  int tmpKelvin = map(p_colorTemperature, COLOR_TEMP_HA_MIN_IN_MIRED, COLOR_TEMP_HA_MAX_IN_MIRED, COLOR_TEMP_MAX_IN_KELVIN, COLOR_TEMP_MIN_IN_KELVIN);
   tmpKelvin = tmpKelvin / 100;
 
   // computes red
@@ -224,6 +225,6 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
       }
     }
   }
-
+  
   return setColor();
 }

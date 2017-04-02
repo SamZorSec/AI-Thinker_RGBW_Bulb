@@ -8,6 +8,11 @@
 #define MY9291_DI_PIN       13
 #define MY9291_DCKI_PIN     15
 
+#define COLOR_TEMP_HA_MIN_IN_MIRED   154    // Home Assistant minimum color temperature
+#define COLOR_TEMP_HA_MAX_IN_MIRED   500    // Home Assistant maximum color temperature
+#define COLOR_TEMP_MIN_IN_KELVIN     1000   // minimum color temperature
+#define COLOR_TEMP_MAX_IN_KELVIN     15000  // maximum color temperature
+
 typedef struct Color {
   uint8_t red;
   uint8_t green;
