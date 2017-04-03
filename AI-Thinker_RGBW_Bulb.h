@@ -20,6 +20,21 @@ typedef struct Color {
   uint8_t white;
 };
 
+enum CMD {
+  CMD_NOT_DEFINED,
+  CMD_STATE_CHANGED,
+};
+
+#define EFFECT_RAMBOW_NAME    "Rainbow"
+#define EFFECT_RAINBOW_DELAY  10
+
+#define EFFECT_LIST EFFECT_RAMBOW_NAME
+
+enum EFFECT {
+  EFFECT_NOT_DEFINED,
+  EFFECT_RAMBOW,
+};
+
 class AIRGBWBulb {
   public:
     AIRGBWBulb(void);
@@ -40,6 +55,8 @@ class AIRGBWBulb {
     
     uint16_t  getColorTemperature(void);
     bool      setColorTemperature(uint16_t p_colorTemperature);
+    
+    bool      setEffect(const char* p_effect);
 
   private:
     my9291*   m_my9291;
@@ -49,6 +66,9 @@ class AIRGBWBulb {
     uint16_t  m_colorTemperature;
     
     bool      setColor();
+
+    void      rainbowEffect(uint8_t p_index);
+
 };
 
 #endif

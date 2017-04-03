@@ -2,6 +2,9 @@
   Alternative firmware for AI Thinker RGBW bulbs, based on ESP8266.
   See the README at https://github.com/mertenats/AI-Thinker_RGBW_Bulb for more information.
   Licensed under the MIT license.
+
+  Samuel Mertenat
+  04.2017
 */
 
 #include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino
@@ -28,10 +31,6 @@ StaticJsonBuffer<256> staticJsonBuffer;
 char jsonBuffer[256] = {0};
 #endif
 
-enum {
-  CMD_NOT_DEFINED,
-  CMD_STATE_CHANGED,
-};
 volatile uint8_t cmd = CMD_NOT_DEFINED;
 
 AIRGBWBulb    bulb;
@@ -264,6 +263,14 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
         cmd = CMD_STATE_CHANGED;
       }
     }
+    
+    if (root.containsKey("effect")) {
+      const char* effect = root["effect"];
+      if (bulb.setEffect(effect)) {
+        DEBUG_PRINTLN(F("INFO: Effect started"));
+        cmd = CMD_NOT_DEFINED;
+      }
+    }
   }
 }
 
@@ -318,6 +325,8 @@ void connectToMQTT() {
         root["rgb"] = true;
         root["white_value"] = true;
         root["color_temp"] = true;
+        root["effect"] = true;
+        root["effect_list"] = EFFECT_LIST;
         root.printTo(jsonBuffer, sizeof(jsonBuffer));
         publishToMQTT(MQTT_CONFIG_TOPIC, jsonBuffer);
 #endif

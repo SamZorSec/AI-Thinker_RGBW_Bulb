@@ -1,5 +1,7 @@
 #include "AI-Thinker_RGBW_Bulb.h"
 
+volatile uint8_t effect = EFFECT_NOT_DEFINED;
+
 ///////////////////////////////////////////////////////////////////////////
 //   CONSTRUCTOR, INIT() AND LOOP()
 ///////////////////////////////////////////////////////////////////////////
@@ -27,6 +29,18 @@ void AIRGBWBulb::init(void) {
 
 void AIRGBWBulb::loop(void) {
   // TODO: handles effects
+  switch(effect) {
+    case EFFECT_NOT_DEFINED:
+      break;
+    case EFFECT_RAMBOW:
+      static unsigned char count = 0;
+      static unsigned long last = millis();
+      if (millis() - last > EFFECT_RAINBOW_DELAY) {
+        last = millis();
+        rainbowEffect(count++);
+      }
+      break;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -61,6 +75,9 @@ bool AIRGBWBulb::setBrightness(uint8_t p_brightness) {
   // saves the new brightness value
   m_brightness = p_brightness;
 
+  if (m_color.white != 0)
+    m_color.white = p_brightness;
+
   return setColor();
 }
 
@@ -80,6 +97,9 @@ bool AIRGBWBulb::setColor(uint8_t p_red, uint8_t p_green, uint8_t p_blue) {
   m_color.green = p_green;
   m_color.blue = p_blue;
 
+  // switches off the white leds
+  m_color.white = 0;
+
   return setColor();
 }
 
@@ -88,9 +108,6 @@ bool AIRGBWBulb::setColor() {
   uint8_t red = map(m_color.red, 0, 255, 0, m_brightness);
   uint8_t green = map(m_color.green, 0, 255, 0, m_brightness);
   uint8_t blue = map(m_color.blue, 0, 255, 0, m_brightness);
-
-  // switches off the white leds
-  m_color.white = 0;
 
   // sets the new color
   m_my9291->setColor((my9291_color_t) {
@@ -118,6 +135,7 @@ bool AIRGBWBulb::setWhite(uint8_t p_white) {
 
   // saves the new white value
   m_color.white = p_white;
+  m_brightness = p_white;
 
   // switch off the RGB leds
   m_color.red = 0;
@@ -152,7 +170,10 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
   if (p_colorTemperature < COLOR_TEMP_HA_MIN_IN_MIRED || p_colorTemperature == m_colorTemperature || p_colorTemperature > COLOR_TEMP_HA_MAX_IN_MIRED)
     return false;
 
-  // saves the new white value
+  // switches off the white leds
+  m_color.white = 0;
+
+  // saves the new colour temperature
   m_colorTemperature = p_colorTemperature;
 
   // https://fr.wikipedia.org/wiki/Mired
@@ -227,4 +248,29 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
   }
   
   return setColor();
+}
+
+///////////////////////////////////////////////////////////////////////////
+//   EFFECTS
+///////////////////////////////////////////////////////////////////////////
+bool AIRGBWBulb::setEffect(const char* p_effect) {
+  if (strcmp(p_effect, EFFECT_RAMBOW_NAME) == 0) {
+    effect = EFFECT_RAMBOW;
+    return true;
+  }
+
+  return false;
+}
+
+// https://github.com/xoseperez/my9291/blob/master/examples/esp8285/esp8285_rainbow.cpp
+void AIRGBWBulb::rainbowEffect(uint8_t p_index) {
+  if (p_index < 85) {
+    setColor(p_index * 3, 255 - p_index * 3, 0);
+  } else if (p_index < 170) {
+    p_index -= 85;
+    setColor(255 - p_index * 3, 0, p_index * 3);
+  } else {
+    p_index -= 170;
+    setColor(0, p_index * 3, 255 - p_index * 3);
+  }
 }
