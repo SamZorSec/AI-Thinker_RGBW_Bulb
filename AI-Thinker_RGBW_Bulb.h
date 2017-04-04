@@ -25,8 +25,9 @@ enum CMD {
   CMD_STATE_CHANGED,
 };
 
-#define EFFECT_RAMBOW_NAME    "Rainbow"
-#define EFFECT_RAINBOW_DELAY  10
+#define EFFECT_NOT_DEFINED_NAME "None"
+#define EFFECT_RAMBOW_NAME      "Rainbow"
+#define EFFECT_RAINBOW_DELAY    10
 
 #define EFFECT_LIST EFFECT_RAMBOW_NAME
 

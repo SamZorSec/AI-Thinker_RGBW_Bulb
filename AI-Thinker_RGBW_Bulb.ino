@@ -216,6 +216,9 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
           cmd = CMD_STATE_CHANGED;
         }
       } else if (strcmp(root["state"], MQTT_STATE_OFF_PAYLOAD) == 0) {
+        // stops the possible current effect
+        bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+        
         if (bulb.setState(false)) {
           DEBUG_PRINT(F("INFO: State changed to: "));
           DEBUG_PRINTLN(bulb.getState());
@@ -225,6 +228,9 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
     }
     
     if (root.containsKey("color")) {
+      // stops the possible current effect
+      bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+      
       uint8_t r = root["color"]["r"];
       uint8_t g = root["color"]["g"];
       uint8_t b = root["color"]["b"];
@@ -249,6 +255,9 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
     }
 
     if (root.containsKey("white_value")) {
+      // stops the possible current effect
+      bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+      
       if (bulb.setWhite(root["white_value"])) {
         DEBUG_PRINT(F("INFO: White changed to: "));
         DEBUG_PRINTLN(bulb.getColor().white);
@@ -257,6 +266,9 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
     }
 
     if (root.containsKey("color_temp")) {
+      // stops the possible current effect
+      bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+      
       if (bulb.setColorTemperature(root["color_temp"])) {
         DEBUG_PRINT(F("INFO: Color temperature changed to: "));
         DEBUG_PRINTLN(bulb.getColorTemperature());

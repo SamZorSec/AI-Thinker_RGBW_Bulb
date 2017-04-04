@@ -254,7 +254,10 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
 //   EFFECTS
 ///////////////////////////////////////////////////////////////////////////
 bool AIRGBWBulb::setEffect(const char* p_effect) {
-  if (strcmp(p_effect, EFFECT_RAMBOW_NAME) == 0) {
+  if (strcmp(p_effect, EFFECT_NOT_DEFINED_NAME) == 0) {
+    effect = EFFECT_NOT_DEFINED;
+    return true;
+  } else if (strcmp(p_effect, EFFECT_RAMBOW_NAME) == 0) {
     effect = EFFECT_RAMBOW;
     return true;
   }
