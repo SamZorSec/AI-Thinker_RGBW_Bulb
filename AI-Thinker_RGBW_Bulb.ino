@@ -33,9 +33,13 @@ char jsonBuffer[256] = {0};
 
 volatile uint8_t cmd = CMD_NOT_DEFINED;
 
-AIRGBWBulb    bulb;
-WiFiClient    wifiClient;
-PubSubClient  mqttClient(wifiClient);
+AIRGBWBulb        bulb;
+#if defined(TLS)
+WiFiClientSecure  wifiClient;
+#else
+WiFiClient        wifiClient;
+#endif
+PubSubClient      mqttClient(wifiClient);
 
 ///////////////////////////////////////////////////////////////////////////
 //   TELNET
@@ -59,6 +63,40 @@ void handleTelnet(void) {
 }
 #endif
 
+
+///////////////////////////////////////////////////////////////////////////
+//  TLS
+///////////////////////////////////////////////////////////////////////////
+/*
+  Function called to verify the fingerprint of the MQTT server certificate
+*/
+#ifdef TLS
+void verifyFingerprint() {
+  DEBUG_PRINT(F("INFO: Connecting to "));
+  DEBUG_PRINTLN(MQTT_SERVER);
+
+  if (!wifiClient.connect(MQTT_SERVER, MQTT_SERVER_PORT)) {
+    DEBUG_PRINTLN(F("ERROR: Connection failed. Halting execution"));
+    delay(1000);
+    ESP.reset();
+    /*
+       TODO: Doing something smarter than rebooting the device
+    */
+  }
+
+  if (wifiClient.verify(TLS_FINGERPRINT, MQTT_SERVER)) {
+    DEBUG_PRINTLN(F("INFO: Connection secure"));
+  } else {
+    DEBUG_PRINTLN(F("ERROR: Connection insecure! Halting execution"));
+    delay(1000);
+    ESP.reset();
+    /*
+       TODO: Doing something smarter than rebooting the device
+    */
+  }
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////
 //   WiFi
 ///////////////////////////////////////////////////////////////////////////
@@ -75,7 +113,7 @@ void handleWiFiEvent(WiFiEvent_t event) {
     case WIFI_EVENT_STAMODE_DISCONNECTED:
       DEBUG_PRINTLN(F("ERROR: WiFi losts connection"));
       /*
-         TODO: Do something smarter than rebooting the device
+         TODO: Doing something smarter than rebooting the device
       */
       delay(5000);
       ESP.restart();
@@ -199,7 +237,7 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
   DEBUG_PRINTLN(p_topic);
   DEBUG_PRINT(F("INFO: MQTT payload: "));
   DEBUG_PRINTLN(payload);
-  
+
   if (String(MQTT_COMMAND_TOPIC).equals(p_topic)) {
     DynamicJsonBuffer dynamicJsonBuffer;
     JsonObject& root = dynamicJsonBuffer.parseObject(p_payload);
@@ -218,7 +256,7 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
       } else if (strcmp(root["state"], MQTT_STATE_OFF_PAYLOAD) == 0) {
         // stops the possible current effect
         bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
-        
+
         if (bulb.setState(false)) {
           DEBUG_PRINT(F("INFO: State changed to: "));
           DEBUG_PRINTLN(bulb.getState());
@@ -226,11 +264,11 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
         }
       }
     }
-    
+
     if (root.containsKey("color")) {
       // stops the possible current effect
       bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
-      
+
       uint8_t r = root["color"]["r"];
       uint8_t g = root["color"]["g"];
       uint8_t b = root["color"]["b"];
@@ -257,7 +295,7 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
     if (root.containsKey("white_value")) {
       // stops the possible current effect
       bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
-      
+
       if (bulb.setWhite(root["white_value"])) {
         DEBUG_PRINT(F("INFO: White changed to: "));
         DEBUG_PRINTLN(bulb.getColor().white);
@@ -268,14 +306,14 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
     if (root.containsKey("color_temp")) {
       // stops the possible current effect
       bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
-      
+
       if (bulb.setColorTemperature(root["color_temp"])) {
         DEBUG_PRINT(F("INFO: Color temperature changed to: "));
         DEBUG_PRINTLN(bulb.getColorTemperature());
         cmd = CMD_STATE_CHANGED;
       }
     }
-    
+
     if (root.containsKey("effect")) {
       const char* effect = root["effect"];
       if (bulb.setEffect(effect)) {
@@ -353,7 +391,7 @@ void connectToMQTT() {
         DEBUG_PRINT(F("INFO: MQTT broker: "));
         DEBUG_PRINTLN(MQTT_SERVER);
       }
-        lastMQTTConnection = millis();
+      lastMQTTConnection = millis();
     }
   }
 }
@@ -363,7 +401,7 @@ void connectToMQTT() {
 ///////////////////////////////////////////////////////////////////////////
 
 void handleCMD() {
-  switch(cmd) {
+  switch (cmd) {
     case CMD_NOT_DEFINED:
       break;
     case CMD_STATE_CHANGED:
@@ -397,6 +435,10 @@ void setup() {
 #endif
 
   setupWiFi();
+
+#if defined(TLS)
+  verifyFingerprint();
+#endif
 
   sprintf(MQTT_CLIENT_ID, "%06X", ESP.getChipId());
 #if defined(MQTT_HOME_ASSISTANT_SUPPORT)

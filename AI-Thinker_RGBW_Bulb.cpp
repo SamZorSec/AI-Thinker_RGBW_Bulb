@@ -76,7 +76,8 @@ bool AIRGBWBulb::setBrightness(uint8_t p_brightness) {
   m_brightness = p_brightness;
 
   if (m_color.white != 0)
-    m_color.white = p_brightness;
+    //m_color.white = p_brightness;
+    return setWhite(p_brightness);
 
   return setColor();
 }
