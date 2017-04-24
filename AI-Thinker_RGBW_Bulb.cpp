@@ -12,19 +12,19 @@ AIRGBWBulb::AIRGBWBulb(void) {
 
 void AIRGBWBulb::init(void) {
   // sets initial color to white (255, 255, 255)
-  setColor(255, 255, 255);
+  //setColor(255, 255, 255);
 
   // sets initial brightness to 100% (255)
-  setBrightness(255);
+  //setBrightness(255);
 
   // sets initial color temperature to 500 (Home Assistant max value)
-  setColorTemperature(COLOR_TEMP_HA_MIN_IN_MIRED); // COLOR_TEMP_HA_MIN_IN_MIRED: white point
+  //setColorTemperature(COLOR_TEMP_HA_MIN_IN_MIRED); // COLOR_TEMP_HA_MIN_IN_MIRED: white point
 
   // sets initial white to 100% (255)
-  //setWhite(255);
+  setWhite(255);
 
   // sets initial state to false
-  m_my9291->setState(false);
+  //m_my9291->setState(true);
 }
 
 void AIRGBWBulb::loop(void) {
@@ -278,3 +278,12 @@ void AIRGBWBulb::rainbowEffect(uint8_t p_index) {
     setColor(0, p_index * 3, 255 - p_index * 3);
   }
 }
+
+bool AIRGBWBulb::isDiscovered(void) {
+  return m_isDiscovered;
+}
+
+void AIRGBWBulb::isDiscovered(bool p_isDiscovered) {
+  m_isDiscovered = p_isDiscovered;
+}
+

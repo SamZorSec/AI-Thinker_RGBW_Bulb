@@ -98,6 +98,87 @@ void verifyFingerprint() {
 #endif
 
 ///////////////////////////////////////////////////////////////////////////
+//   SAVE/LOAD SAVED CONFIGURATION
+///////////////////////////////////////////////////////////////////////////
+#if defined(SAVE_STATE)
+bool loadConfig() {
+  if (!SPIFFS.exists("/config.json")) {
+    // do nothing...
+  } else {
+    File configFile = SPIFFS.open("/config.json", "r");
+    if (!configFile) {
+      DEBUG_PRINTLN(F("ERROR: Failed to open config file"));
+      return false;
+    }
+
+    size_t size = configFile.size();
+    std::unique_ptr<char[]> buf(new char[size]);
+
+    configFile.readBytes(buf.get(), size);
+
+    DynamicJsonBuffer dynamicJsonBuffer;
+    JsonObject& root = dynamicJsonBuffer.parseObject(buf.get());
+
+    if (!root.success()) {
+      DEBUG_PRINTLN(F("ERROR: parseObject() failed"));
+      return false;
+    }
+
+    bool state;
+    if (strcmp(root["state"], MQTT_STATE_ON_PAYLOAD) == 0) {
+      state = true;
+    } else if (strcmp(root["state"], MQTT_STATE_OFF_PAYLOAD) == 0) {
+      state = false;
+    }
+
+    uint8_t red = root["color"]["r"];
+    uint8_t green = root["color"]["g"];
+    uint8_t blue = root["color"]["b"];
+    uint8_t white = root["white_value"];
+
+    if (white != 0) {
+      bulb.setWhite(white);
+    } else {
+      bulb.setColor(red, green, blue);
+    }
+
+    uint8_t brightness = (root["brightness"]);
+    bulb.setBrightness(brightness);
+
+    bool isDiscovered = root["isDiscovered"];
+    bulb.isDiscovered(isDiscovered);
+
+    bulb.setState(state);
+
+    return true;
+  }
+
+}
+
+bool saveConfig() {
+  DynamicJsonBuffer dynamicJsonBuffer;
+  JsonObject& root = dynamicJsonBuffer.createObject();
+  root["state"] = bulb.getState() ? MQTT_STATE_ON_PAYLOAD : MQTT_STATE_OFF_PAYLOAD;
+  root["brightness"] = bulb.getBrightness();
+  JsonObject& color = root.createNestedObject("color");
+  color["r"] = bulb.getColor().red;
+  color["g"] = bulb.getColor().green;
+  color["b"] = bulb.getColor().blue;
+  root["white_value"] =  bulb.getColor().white;
+  root["isDiscovered"] = bulb.isDiscovered();
+
+  File configFile = SPIFFS.open("/config.json", "w");
+  if (!configFile) {
+    DEBUG_PRINTLN(F("ERROR: Failed to open config file for writing"));
+    return false;
+  }
+
+  root.printTo(configFile);
+  return true;
+}
+#endif
+
+///////////////////////////////////////////////////////////////////////////
 //   WiFi
 ///////////////////////////////////////////////////////////////////////////
 /*
@@ -365,20 +446,23 @@ void connectToMQTT() {
         publishToMQTT(MQTT_STATUS_TOPIC, "alive");
 
 #if defined(MQTT_HOME_ASSISTANT_SUPPORT)
-        // MQTT discovery for Home Assistant
-        JsonObject& root = staticJsonBuffer.createObject();
-        root["name"] = FRIENDLY_NAME;
-        root["platform"] = "mqtt_json";
-        root["state_topic"] = MQTT_STATE_TOPIC;
-        root["command_topic"] = MQTT_COMMAND_TOPIC;
-        root["brightness"] = true;
-        root["rgb"] = true;
-        root["white_value"] = true;
-        root["color_temp"] = true;
-        root["effect"] = true;
-        root["effect_list"] = EFFECT_LIST;
-        root.printTo(jsonBuffer, sizeof(jsonBuffer));
-        publishToMQTT(MQTT_CONFIG_TOPIC, jsonBuffer);
+        if (!bulb.isDiscovered()) {
+          bulb.isDiscovered(true);
+          // MQTT discovery for Home Assistant
+          JsonObject& root = staticJsonBuffer.createObject();
+          root["name"] = FRIENDLY_NAME;
+          root["platform"] = "mqtt_json";
+          root["state_topic"] = MQTT_STATE_TOPIC;
+          root["command_topic"] = MQTT_COMMAND_TOPIC;
+          root["brightness"] = true;
+          root["rgb"] = true;
+          root["white_value"] = true;
+          root["color_temp"] = true;
+          root["effect"] = true;
+          root["effect_list"] = EFFECT_LIST;
+          root.printTo(jsonBuffer, sizeof(jsonBuffer));
+          publishToMQTT(MQTT_CONFIG_TOPIC, jsonBuffer);
+        }
 #endif
 
         subscribeToMQTT(MQTT_COMMAND_TOPIC);
@@ -404,8 +488,18 @@ void handleCMD() {
   switch (cmd) {
     case CMD_NOT_DEFINED:
       break;
-    case CMD_STATE_CHANGED:
+#if defined(SAVE_STATE)
+    case CMD_SAVE_STATE:
       cmd = CMD_NOT_DEFINED;
+      saveConfig();
+      break;
+#endif
+    case CMD_STATE_CHANGED:
+#if defined(SAVE_STATE)
+      cmd = CMD_SAVE_STATE;
+#else
+      cmd = CMD_NOT_DEFINED;
+#endif
       DynamicJsonBuffer dynamicJsonBuffer;
       JsonObject& root = dynamicJsonBuffer.createObject();
       root["state"] = bulb.getState() ? MQTT_STATE_ON_PAYLOAD : MQTT_STATE_OFF_PAYLOAD;
@@ -432,6 +526,13 @@ void setup() {
 #elif defined(DEBUG_TELNET)
   telnetServer.begin();
   telnetServer.setNoDelay(true);
+#endif
+
+  bulb.init();
+
+#if defined(SAVE_STATE)
+  SPIFFS.begin();
+  loadConfig();
 #endif
 
   setupWiFi();
@@ -469,7 +570,7 @@ void setup() {
   setupOTA();
 #endif
 
-  bulb.init();
+  //bulb.init();
 
   cmd = CMD_STATE_CHANGED;
 }

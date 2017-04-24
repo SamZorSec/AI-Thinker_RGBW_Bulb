@@ -3,6 +3,9 @@
 #define _AI-THINKER_RGBW_BULB_
 
 #include <my9291.h>         // https://github.com/xoseperez/my9291
+#include <ArduinoJson.h>    // https://github.com/bblanchon/ArduinoJson
+#include "FS.h"
+
 #include "config.h"
 
 #define MY9291_DI_PIN       13
@@ -23,6 +26,7 @@ typedef struct Color {
 enum CMD {
   CMD_NOT_DEFINED,
   CMD_STATE_CHANGED,
+  CMD_SAVE_STATE
 };
 
 #define EFFECT_NOT_DEFINED_NAME "None"
@@ -59,17 +63,21 @@ class AIRGBWBulb {
     
     bool      setEffect(const char* p_effect);
 
+    bool      isDiscovered(void);
+    void      isDiscovered(bool p_isDiscovered);
+
   private:
     my9291*   m_my9291;
     
     uint8_t   m_brightness;
     Color     m_color;
     uint16_t  m_colorTemperature;
+
+    bool      m_isDiscovered = false;
     
     bool      setColor();
 
     void      rainbowEffect(uint8_t p_index);
-
 };
 
 #endif
