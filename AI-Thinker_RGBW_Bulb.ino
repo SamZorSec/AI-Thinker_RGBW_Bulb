@@ -3,8 +3,10 @@
   See the README at https://github.com/mertenats/AI-Thinker_RGBW_Bulb for more information.
   Licensed under the MIT license.
 
+  If you like the content of this repo, please add a star! Thank you!
+
   Samuel Mertenat
-  04.2017
+  04-05.2017
 */
 
 #include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino
@@ -14,10 +16,11 @@
 #include "AI-Thinker_RGBW_Bulb.h"
 
 #if defined(DEBUG_TELNET)
-WiFiServer  telnetServer(23);
+WiFiServer  telnetServer(DEBUG_TELNET_PORT);
 WiFiClient  telnetClient;
 #define     DEBUG_PRINT(x)    telnetClient.print(x)
 #define     DEBUG_PRINTLN(x)  telnetClient.println(x)
+
 #elif defined(DEBUG_SERIAL)
 #define     DEBUG_PRINT(x)    Serial.print(x)
 #define     DEBUG_PRINTLN(x)  Serial.println(x)
@@ -26,10 +29,8 @@ WiFiClient  telnetClient;
 #define     DEBUG_PRINTLN(x)
 #endif
 
-#if defined(MQTT_HOME_ASSISTANT_SUPPORT)
 StaticJsonBuffer<256> staticJsonBuffer;
 char jsonBuffer[256] = {0};
-#endif
 
 volatile uint8_t cmd = CMD_NOT_DEFINED;
 
@@ -103,7 +104,7 @@ void verifyFingerprint() {
 #if defined(SAVE_STATE)
 bool loadConfig() {
   if (!SPIFFS.exists("/config.json")) {
-    // do nothing...
+    bulb.init();
   } else {
     File configFile = SPIFFS.open("/config.json", "r");
     if (!configFile) {
@@ -291,21 +292,6 @@ void handleOTA() {
 char MQTT_CLIENT_ID[7] = {0};
 #if defined(MQTT_HOME_ASSISTANT_SUPPORT)
 char MQTT_CONFIG_TOPIC[sizeof(MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX) + sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_CONFIG_TOPIC_TEMPLATE) - 4] = {0};
-#else
-// brightness
-char MQTT_BRIGHTNESS_STATE_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_BRIGHTNESS_STATE_TOPIC_TEMPLATE) - 2] = {0};
-char MQTT_BRIGHTNESS_COMMAND_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_BRIGHTNESS_COMMAND_TOPIC_TEMPLATE) - 2] = {0};
-// color
-char MQTT_COLOR_STATE_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_COLOR_STATE_TOPIC_TEMPLATE) - 2] = {0};
-char MQTT_COLOR_COMMAND_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_COLOR_COMMAND_TOPIC_TEMPLATE) - 2] = {0};
-// white
-char MQTT_WHITE_STATE_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_WHITE_STATE_TOPIC_TEMPLATE) - 2] = {0};
-char MQTT_WHITE_COMMAND_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_WHITE_COMMAND_TOPIC_TEMPLATE) - 2] = {0};
-// color temperature
-char MQTT_COLOR_TEMP_STATE_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_COLOR_TEMP_STATE_TOPIC_TEMPLATE) - 2] = {0};
-char MQTT_COLOR_TEMP_COMMAND_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_COLOR_TEMP_COMMAND_TOPIC_TEMPLATE) - 2] = {0};
-// message buffer
-char buffer[12];
 #endif
 
 char MQTT_STATE_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_STATE_TOPIC_TEMPLATE) - 2] = {0};
@@ -313,6 +299,7 @@ char MQTT_COMMAND_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_COMMAND_TOPIC_TEMPL
 char MQTT_STATUS_TOPIC[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_STATUS_TOPIC_TEMPLATE) - 2] = {0};
 
 volatile unsigned long lastMQTTConnection = MQTT_CONNECTION_TIMEOUT;
+
 /*
    Function called when a MQTT message has arrived
    @param p_topic   The topic of the MQTT message
@@ -332,7 +319,6 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
   DEBUG_PRINT(F("INFO: MQTT payload: "));
   DEBUG_PRINTLN(payload);
 
-#if defined(MQTT_HOME_ASSISTANT_SUPPORT)
   if (String(MQTT_COMMAND_TOPIC).equals(p_topic)) {
     DynamicJsonBuffer dynamicJsonBuffer;
     JsonObject& root = dynamicJsonBuffer.parseObject(p_payload);
@@ -417,35 +403,6 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
       }
     }
   }
-#else
-  if (String(MQTT_COMMAND_TOPIC).equals(p_topic)) {
-    if (payload.equals(String(MQTT_STATE_ON_PAYLOAD))) {
-      if (bulb.setState(true))
-        cmd = CMD_STATE_CHANGED;
-    } else if (payload.equals(String(MQTT_STATE_OFF_PAYLOAD))) {
-      if (bulb.setState(false))
-        cmd = CMD_STATE_CHANGED;
-    }
-  } else if (String(MQTT_BRIGHTNESS_COMMAND_TOPIC).equals(p_topic)) {
-    if (bulb.setBrightness(payload.toInt()))
-      cmd = CMD_BRIGHTNESS_CHANGED;
-  } else if (String(MQTT_COLOR_COMMAND_TOPIC).equals(p_topic)) {
-    uint8_t firstCommaIndex = payload.indexOf(',');
-    uint8_t secondCommaIndex = payload.indexOf(',', firstCommaIndex + 1);
-    uint8_t red = payload.substring(0, firstCommaIndex).toInt();
-    uint8_t green = payload.substring(firstCommaIndex + 1, secondCommaIndex).toInt();
-    uint8_t blue = payload.substring(secondCommaIndex + 1).toInt();
-
-    if (bulb.setColor(red, green, blue))
-      cmd = CMD_COLOR_CHANGED;
-  } else if (String(MQTT_WHITE_COMMAND_TOPIC).equals(p_topic)) {
-    if (bulb.setWhite(payload.toInt()));
-    cmd = CMD_WHITE_CHANGED;
-  } else if (String(MQTT_COLOR_TEMP_COMMAND_TOPIC).equals(p_topic)) {
-    if (bulb.setColorTemperature(payload.toInt()));
-      cmd = CMD_COLOR_TEMP_CHANGED;
-    }
-#endif
 }
 
 /*
@@ -506,11 +463,6 @@ void connectToMQTT() {
           root.printTo(jsonBuffer, sizeof(jsonBuffer));
           publishToMQTT(MQTT_CONFIG_TOPIC, jsonBuffer);
         }
-#else
-        subscribeToMQTT(MQTT_BRIGHTNESS_COMMAND_TOPIC);
-        subscribeToMQTT(MQTT_COLOR_COMMAND_TOPIC);
-        subscribeToMQTT(MQTT_WHITE_COMMAND_TOPIC);
-        subscribeToMQTT(MQTT_COLOR_TEMP_COMMAND_TOPIC);
 #endif
         subscribeToMQTT(MQTT_COMMAND_TOPIC);
       } else {
@@ -547,7 +499,6 @@ void handleCMD() {
 #else
       cmd = CMD_NOT_DEFINED;
 #endif
-#if defined(MQTT_HOME_ASSISTANT_SUPPORT)
       DynamicJsonBuffer dynamicJsonBuffer;
       JsonObject& root = dynamicJsonBuffer.createObject();
       root["state"] = bulb.getState() ? MQTT_STATE_ON_PAYLOAD : MQTT_STATE_OFF_PAYLOAD;
@@ -560,30 +511,7 @@ void handleCMD() {
       root["color_temp"] = bulb.getColorTemperature();
       root.printTo(jsonBuffer, sizeof(jsonBuffer));
       publishToMQTT(MQTT_STATE_TOPIC, jsonBuffer);
-#else
-      if (bulb.getState())
-        publishToMQTT(MQTT_STATE_TOPIC, MQTT_STATE_ON_PAYLOAD);
-      else
-        publishToMQTT(MQTT_STATE_TOPIC, MQTT_STATE_OFF_PAYLOAD);
-#endif
       break;
-#if !defined(MQTT_HOME_ASSISTANT_SUPPORT)
-    case CMD_BRIGHTNESS_CHANGED:
-      snprintf(buffer, sizeof(buffer), "%d", bulb.getBrightness());     
-      publishToMQTT(MQTT_BRIGHTNESS_STATE_TOPIC, buffer);
-      break;
-    case CMD_COLOR_CHANGED:
-      snprintf(buffer, sizeof(buffer), "%d,%d,%d", bulb.getColor().red, bulb.getColor().green, bulb.getColor().blue);
-      publishToMQTT(MQTT_COLOR_STATE_TOPIC, buffer);
-      break;
-    case CMD_WHITE_CHANGED:
-      snprintf(buffer, sizeof(buffer), "%d", bulb.getColor().white);     
-      publishToMQTT(MQTT_WHITE_STATE_TOPIC, buffer);
-    case CMD_COLOR_TEMP_CHANGED:
-      snprintf(buffer, sizeof(buffer), "%d", bulb.getColorTemperature());     
-      publishToMQTT(MQTT_COLOR_TEMP_STATE_TOPIC, buffer);
-      break;
-#endif
   }
 }
 
@@ -599,11 +527,12 @@ void setup() {
   telnetServer.setNoDelay(true);
 #endif
 
-  bulb.init();
-
 #if defined(SAVE_STATE)
   SPIFFS.begin();
+  // aSPIFFS.format(); // remove config
   loadConfig();
+#else
+  bulb.init();
 #endif
 
   setupWiFi();
@@ -619,15 +548,6 @@ void setup() {
   sprintf(MQTT_CONFIG_TOPIC, MQTT_CONFIG_TOPIC_TEMPLATE, MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX, MQTT_CLIENT_ID);
   DEBUG_PRINT(F("INFO: MQTT config topic: "));
   DEBUG_PRINTLN(MQTT_CONFIG_TOPIC);
-#else
-  sprintf(MQTT_BRIGHTNESS_STATE_TOPIC, MQTT_BRIGHTNESS_STATE_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
-  sprintf(MQTT_BRIGHTNESS_COMMAND_TOPIC, MQTT_BRIGHTNESS_COMMAND_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
-  sprintf(MQTT_COLOR_STATE_TOPIC, MQTT_COLOR_STATE_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
-  sprintf(MQTT_COLOR_COMMAND_TOPIC, MQTT_COLOR_COMMAND_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
-  sprintf(MQTT_WHITE_STATE_TOPIC, MQTT_WHITE_STATE_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
-  sprintf(MQTT_WHITE_COMMAND_TOPIC, MQTT_WHITE_COMMAND_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
-  sprintf(MQTT_COLOR_TEMP_STATE_TOPIC, MQTT_COLOR_TEMP_STATE_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
-  sprintf(MQTT_COLOR_TEMP_COMMAND_TOPIC, MQTT_COLOR_TEMP_COMMAND_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
 #endif
 
   sprintf(MQTT_STATE_TOPIC, MQTT_STATE_TOPIC_TEMPLATE, MQTT_CLIENT_ID);
@@ -649,8 +569,6 @@ void setup() {
 #if defined(OTA)
   setupOTA();
 #endif
-
-  //bulb.init();
 
   cmd = CMD_STATE_CHANGED;
 }

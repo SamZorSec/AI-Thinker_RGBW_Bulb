@@ -11,11 +11,13 @@ This is an alternative firmware for AI-Thinker RGBW LED bulbs which uses MQTT in
 - Debug printing over Telnet or Serial (uncomment `#define DEBUG_TELNET` or `#define DEBUG_SERIAL` in `config.h`)
 - ArduinoOTA support for over-the-air firmware updates (enabled, `#define OTA` in `config.h`)
 - Native support for Home Assistant, including MQTT discovery (enabled, `#define MQTT_HOME_ASSISTANT_SUPPORT` in `config.h`)
+- Store the current state of the bulb in memory to prevent from losing its state in case of power cut (enabled, `#define SAVE_STATE` in `config.h`)
+
 
 ### Last Will and Testament
 
 The firmware will publish a *MQTT Last Will and Testament* at `<chipID>/rgbw/status`.
-When the device successfully connects it will publish `alive` to that topic and when it disconnects `dead` will automatically be published.
+When the device successfully connects it will publish `alive` to that topic and when it disconnects, `dead` will automatically be published.
 
 ### Discovery
 
@@ -34,6 +36,24 @@ mqtt:
   discovery: true
 ```
 
+### MQTT JSON Light
+This firmware supports on/off, brightness, RGB colors, color temperature, white values and effects. The messages sent to/from the light look similar to the example below, omitting fields when they aren’t needed.
+
+```yaml
+{
+  "brightness": 255,
+  "color_temp": 155,
+  "color": {
+    "r": 255,
+    "g": 255,
+    "b": 255,
+  },
+  "effect": "Rainbow",
+  "state": "ON",
+  "white_value": 150
+}
+```
+
 ## How to
 1. Install the [Arduino IDE](https://www.arduino.cc/en/Main/Software) and the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)
 2. Rename `config.example.h`to `config.h`
@@ -49,7 +69,6 @@ mqtt:
 ## ToDo
 - [Transitions](https://home-assistant.io/components/light.mqtt_json/)
 - [Flash mode](https://home-assistant.io/components/light.mqtt_json/)
-- [Individual MQTT topics](https://home-assistant.io/components/light.mqtt/) instead of JSON
 - More effects
 - [WiFiManager](https://github.com/tzapu/WiFiManager)
 

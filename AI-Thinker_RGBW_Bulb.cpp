@@ -24,12 +24,12 @@ void AIRGBWBulb::init(void) {
   setWhite(255);
 
   // sets initial state to false
-  //m_my9291->setState(true);
+  m_my9291->setState(true);
 }
 
 void AIRGBWBulb::loop(void) {
   // TODO: handles effects
-  switch(effect) {
+  switch (effect) {
     case EFFECT_NOT_DEFINED:
       break;
     case EFFECT_RAMBOW:
@@ -180,13 +180,13 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
   // https://fr.wikipedia.org/wiki/Mired
   // http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
   // M = 1000000 / T <> T [kelvin] = 1000000 / M [mired]
-  //    int tmpKelvin = 1000000 / m_colorTemperature;
+  //      int tmpKelvin = 1000000 / m_colorTemperature;
   //
-  //    if (tmpKelvin < 1000) {
-  //      tmpKelvin = 1000;
-  //    } else if (tmpKelvin > 40000) {
-  //      tmpKelvin = 40000;
-  //    }
+  //      if (tmpKelvin < 1000) {
+  //        tmpKelvin = 1000;
+  //      } else if (tmpKelvin > 40000) {
+  //        tmpKelvin = 40000;
+  //      }
 
   int tmpKelvin = map(p_colorTemperature, COLOR_TEMP_HA_MIN_IN_MIRED, COLOR_TEMP_HA_MAX_IN_MIRED, COLOR_TEMP_MAX_IN_KELVIN, COLOR_TEMP_MIN_IN_KELVIN);
   tmpKelvin = tmpKelvin / 100;
@@ -247,7 +247,7 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
       }
     }
   }
-  
+
   return setColor();
 }
 

@@ -6,7 +6,7 @@
 ///////////////////////////////////////////////////////////////////////////
 //   WiFi
 ///////////////////////////////////////////////////////////////////////////
-#define WIFI_SSID     ""
+#define WIFI_SSID     "" 
 #define WIFI_PASSWORD ""
 
 ///////////////////////////////////////////////////////////////////////////
@@ -17,20 +17,19 @@
 #define MQTT_SERVER       ""
 #define MQTT_SERVER_PORT  1883
 
+// enable Home Assistant MQTT Discovery feature
 #define MQTT_HOME_ASSISTANT_SUPPORT
 
 #if defined(MQTT_HOME_ASSISTANT_SUPPORT)
 // template: <discovery prefix>/light/<chip ID>/config, status, state or set
-#define MQTT_CONFIG_TOPIC_TEMPLATE  "%s/light/%s/config"
-#else
-
-#endif
+#define MQTT_CONFIG_TOPIC_TEMPLATE            "%s/light/%s/config"
+#define MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX  "homeassistant"
+#endif 
 
 #define MQTT_STATE_TOPIC_TEMPLATE   "%s/rgbw/state"
 #define MQTT_COMMAND_TOPIC_TEMPLATE "%s/rgbw/set"
 #define MQTT_STATUS_TOPIC_TEMPLATE  "%s/rgbw/status" // MQTT connection: alive/dead
 
-#define MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX  "homeassistant"
 #define MQTT_STATE_ON_PAYLOAD   "ON"
 #define MQTT_STATE_OFF_PAYLOAD  "OFF"
 
@@ -39,8 +38,12 @@
 ///////////////////////////////////////////////////////////////////////////
 //   DEBUG
 ///////////////////////////////////////////////////////////////////////////
-#define DEBUG_TELNET
 //#define DEBUG_SERIAL
+//#define DEBUG_TELNET
+
+#if defined(DEBUG_TELNET)
+#define DEBUG_TELNET_PORT 23
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 //   OTA
