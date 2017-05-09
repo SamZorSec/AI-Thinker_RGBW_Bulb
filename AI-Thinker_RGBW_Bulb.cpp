@@ -8,6 +8,10 @@ volatile uint8_t effect = EFFECT_NOT_DEFINED;
 AIRGBWBulb::AIRGBWBulb(void) {
   // creates a new instance of the my9291 driver
   m_my9291 = new my9291(MY9291_DI_PIN, MY9291_DCKI_PIN, MY9291_COMMAND_DEFAULT);
+
+#if defined(GAMMA_CORRECTION)
+  m_isGammaCorrectionEnabled = true;
+#endif
 }
 
 void AIRGBWBulb::init(void) {
@@ -106,9 +110,13 @@ bool AIRGBWBulb::setColor(uint8_t p_red, uint8_t p_green, uint8_t p_blue) {
 
 bool AIRGBWBulb::setColor() {
   // maps the RGB values with the actual brightness
-  uint8_t red = map(m_color.red, 0, 255, 0, m_brightness);
-  uint8_t green = map(m_color.green, 0, 255, 0, m_brightness);
-  uint8_t blue = map(m_color.blue, 0, 255, 0, m_brightness);
+  uint8_t red = (m_isGammaCorrectionEnabled) ? pgm_read_byte(&gamma8[m_color.red]) : m_color.red;
+  uint8_t green = (m_isGammaCorrectionEnabled) ? pgm_read_byte(&gamma8[m_color.green]) : m_color.green;
+  uint8_t blue = (m_isGammaCorrectionEnabled) ? pgm_read_byte(&gamma8[m_color.blue]) : m_color.blue;
+
+  red = map(red, 0, 255, 0, m_brightness);
+  green = map(green, 0, 255, 0, m_brightness);
+  blue = map(blue, 0, 255, 0, m_brightness);
 
   // sets the new color
   m_my9291->setColor((my9291_color_t) {
@@ -285,5 +293,13 @@ bool AIRGBWBulb::isDiscovered(void) {
 
 void AIRGBWBulb::isDiscovered(bool p_isDiscovered) {
   m_isDiscovered = p_isDiscovered;
+}
+
+bool AIRGBWBulb::isGammaCorrectionEnabled(void) {
+  return m_isGammaCorrectionEnabled;
+}
+
+void AIRGBWBulb::isGammaCorrectionEnabled(bool p_isGammaCorrectionEnabled) {
+  m_isGammaCorrectionEnabled = p_isGammaCorrectionEnabled;
 }
 

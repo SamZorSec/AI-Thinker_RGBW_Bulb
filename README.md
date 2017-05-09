@@ -12,6 +12,7 @@ This is an alternative firmware for AI-Thinker RGBW LED bulbs which uses MQTT in
 - ArduinoOTA support for over-the-air firmware updates (enabled, `#define OTA` in `config.h`)
 - Native support for Home Assistant, including MQTT discovery (enabled, `#define MQTT_HOME_ASSISTANT_SUPPORT` in `config.h`)
 - Store the current state of the bulb in memory to prevent from losing its state in case of power cut (enabled, `#define SAVE_STATE` in `config.h`)
+- [Gamma correction](https://learn.adafruit.com/led-tricks-gamma-correction/the-issue) (enabled, `#define GAMMA_CORRECTION` in `config.h`)
 
 
 ### Last Will and Testament
@@ -53,6 +54,18 @@ This firmware supports on/off, brightness, RGB colors, color temperature, white 
   "white_value": 150
 }
 ```
+
+| Name          | Data Type | Values     | Description
+|---------------|-----------|------------|------------------------------------------------------------|
+| `brightness`  | Integer   | 0-255      | The brightness to set to                                   |
+| `color`       | Object    | -          | A dictionary with the below RGB values                     |
+| `color.r`     | Integer   | 0-255      | The red color to set to                                    |
+| `color.g`     | Integer   | 0-255      | The green color to set to                                  |
+| `color.b`     | Integer   | 0-255      | The blue color to set to                                   |
+| `state`       | Boolean   | true/false | The state of the light to set to                           |
+| `white_value` | Integer   | 0-255      | The white color to set to                                  |
+| `effect`      | String    | Rainbow    | The effect to set to                                       |
+| `color_temp`  | Integer   | 154-500    | The color temperature to set to                            |
 
 ## How to
 1. Install the [Arduino IDE](https://www.arduino.cc/en/Main/Software) and the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)

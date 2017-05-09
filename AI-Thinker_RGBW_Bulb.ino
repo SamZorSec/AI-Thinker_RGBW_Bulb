@@ -143,11 +143,14 @@ bool loadConfig() {
       bulb.setColor(red, green, blue);
     }
 
-    uint8_t brightness = (root["brightness"]);
+    uint8_t brightness = root["brightness"];
     bulb.setBrightness(brightness);
 
     bool isDiscovered = root["isDiscovered"];
     bulb.isDiscovered(isDiscovered);
+    
+    bool isGammaCorrectionEnabled = root["isGammaCorrectionEnabled"];
+    bulb.isGammaCorrectionEnabled(isGammaCorrectionEnabled);
 
     bulb.setState(state);
 
@@ -167,6 +170,7 @@ bool saveConfig() {
   color["b"] = bulb.getColor().blue;
   root["white_value"] =  bulb.getColor().white;
   root["isDiscovered"] = bulb.isDiscovered();
+  root["isGammaCorrectionEnabled"] = bulb.isGammaCorrectionEnabled();
 
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile) {
