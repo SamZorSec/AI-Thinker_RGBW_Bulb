@@ -1,6 +1,6 @@
 # Alternative firmware for AI-Thinker RGBW bulbs
 
-This is an alternative firmware for AI-Thinker RGBW LED bulbs which uses MQTT instead of the default Chinese mobile application. The bulb is a cheap (~12-18$) product available on sites like Aliexpress and eBay which can be easily reprogrammed as it is based on the popular ESP8266 Wi-Fi chip.
+This is an alternative firmware for AI-Thinker RGBW LED bulbs, which uses MQTT instead of the default Chinese mobile application. The bulb is a cheap (~12-18$) product available on sites like Aliexpress ([here](https://www.aliexpress.com/item/DIY-Wifi-LED-Bulb-E27-5W-AC110-240V-lampada-LED-Dimmable-Bulb-Lamp-Remote-Control-Led/32740055347.html?spm=2114.10010108.1000013.4.P25xWH&scm=1007.13339.33317.0&pvid=7153dc2f-cf5f-4aae-904a-0bbea7dd8130&tpp=1&aff_platform=link-c-tool&cpt=1494357650729&sk=ybuVN3n&aff_trace_key=36cdbdb111d04acf9cc7acdb2f38f2a8-1494357650729-08203-ybuVN3n)) and eBay ([here](http://www.ebay.com/itm/Noduino-Open-Light-LED-Smart-Bulb-Color-E27-7W-WiFi-ESP8266-MQTT-/222491267554?rmvSB=true) or [here](http://www.ebay.com/itm/2pcs-Lot-Noduino-Open-Light-LED-Smart-Bulb-Color-E27-7W-WiFi-ESP8266-MQTT-/222486566367?&rmvSB=true)), which can be easily reprogrammed as it is based on the popular ESP8266 Wi-Fi chip.
 
 ![Design](images/Design.JPG)
 
@@ -79,12 +79,6 @@ This firmware supports on/off, brightness, RGB colors, color temperature, white 
 
 ![Design](images/PCB.JPG)
 
-## ToDo
-- [Transitions](https://home-assistant.io/components/light.mqtt_json/)
-- [Flash mode](https://home-assistant.io/components/light.mqtt_json/)
-- More effects
-- [WiFiManager](https://github.com/tzapu/WiFiManager)
-
 ## Licence
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -94,4 +88,4 @@ This firmware supports on/off, brightness, RGB colors, color temperature, white 
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 
-*If you like the content of this repo, please add a star! Thank you!*
+*This firmware was graciously supported by [DariBer](https://github.com/DariBer), who had offered me a development bulb. If you like the content of this repo, please add a star! Thank you!*
