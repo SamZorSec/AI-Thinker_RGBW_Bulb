@@ -86,6 +86,9 @@ class AIRGBWBulb {
     bool      isDiscovered(void);
     void      isDiscovered(bool p_isDiscovered);
 
+    bool      isGammaCorrectionEnabled(void);
+    void      isGammaCorrectionEnabled(bool p_isGammaCorrectionEnabled);
+
   private:
     my9291*   m_my9291;
     

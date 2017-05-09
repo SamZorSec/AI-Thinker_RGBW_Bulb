@@ -295,3 +295,11 @@ void AIRGBWBulb::isDiscovered(bool p_isDiscovered) {
   m_isDiscovered = p_isDiscovered;
 }
 
+bool AIRGBWBulb::isGammaCorrectionEnabled(void) {
+  return m_isGammaCorrectionEnabled;
+}
+
+void AIRGBWBulb::isGammaCorrectionEnabled(bool p_isGammaCorrectionEnabled) {
+  m_isGammaCorrectionEnabled = p_isGammaCorrectionEnabled;
+}
+
