@@ -340,7 +340,7 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
         }
       } else if (strcmp(root["state"], MQTT_STATE_OFF_PAYLOAD) == 0) {
         // stops the possible current effect
-        bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+        //bulb.setEffect(EFFECT_NONE_NAME);
 
         if (bulb.setState(false)) {
           DEBUG_PRINT(F("INFO: State changed to: "));
@@ -352,7 +352,7 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
 
     if (root.containsKey("color")) {
       // stops the possible current effect
-      bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+      bulb.setEffect(EFFECT_NONE_NAME);
 
       uint8_t r = root["color"]["r"];
       uint8_t g = root["color"]["g"];
@@ -379,7 +379,7 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
 
     if (root.containsKey("white_value")) {
       // stops the possible current effect
-      bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+      bulb.setEffect(EFFECT_NONE_NAME);
 
       if (bulb.setWhite(root["white_value"])) {
         DEBUG_PRINT(F("INFO: White changed to: "));
@@ -390,7 +390,7 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
 
     if (root.containsKey("color_temp")) {
       // stops the possible current effect
-      bulb.setEffect(EFFECT_NOT_DEFINED_NAME);
+      bulb.setEffect(EFFECT_NONE_NAME);
 
       if (bulb.setColorTemperature(root["color_temp"])) {
         DEBUG_PRINT(F("INFO: Color temperature changed to: "));
@@ -402,7 +402,8 @@ void handleMQTTMessage(char* p_topic, byte* p_payload, unsigned int p_length) {
     if (root.containsKey("effect")) {
       const char* effect = root["effect"];
       if (bulb.setEffect(effect)) {
-        DEBUG_PRINTLN(F("INFO: Effect started"));
+        DEBUG_PRINT(F("effect: "));
+        DEBUG_PRINTLN(effect);
         cmd = CMD_NOT_DEFINED;
       }
     }
@@ -463,7 +464,11 @@ void connectToMQTT() {
           root["white_value"] = true;
           root["color_temp"] = true;
           root["effect"] = true;
-          root["effect_list"] = EFFECT_LIST;
+          //root["effect_list"] = EFFECT_RAINBOW_NAME;
+          JsonArray& effect_list = root.createNestedArray("effect_list");
+          effect_list.add(EFFECT_NONE_NAME);
+          effect_list.add(EFFECT_RAINBOW_NAME);
+          effect_list.add(EFFECT_BLINK_NAME);
           root.printTo(jsonBuffer, sizeof(jsonBuffer));
           publishToMQTT(MQTT_CONFIG_TOPIC, jsonBuffer);
         }
@@ -533,7 +538,7 @@ void setup() {
 
 #if defined(SAVE_STATE)
   SPIFFS.begin();
-  // aSPIFFS.format(); // remove config
+  SPIFFS.format(); // remove config
   loadConfig();
 #else
   bulb.init();
@@ -546,7 +551,6 @@ void setup() {
 #endif
 
   sprintf(MQTT_CLIENT_ID, "%06X", ESP.getChipId());
-  //sprintf(MQTT_CLIENT_ID, "AC3566");
 
 #if defined(MQTT_HOME_ASSISTANT_SUPPORT)
   sprintf(MQTT_CONFIG_TOPIC, MQTT_CONFIG_TOPIC_TEMPLATE, MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX, MQTT_CLIENT_ID);
@@ -578,6 +582,10 @@ void setup() {
 }
 
 void loop() {
+  bulb.loop();
+
+  yield();
+  
 #if defined(DEBUG_TELNET)
   // handle the Telnet connection
   handleTelnet();
@@ -600,5 +608,4 @@ void loop() {
 
   yield();
 
-  bulb.loop();
 }

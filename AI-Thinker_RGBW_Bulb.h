@@ -49,15 +49,16 @@ enum CMD {
   CMD_SAVE_STATE
 };
 
-#define EFFECT_NOT_DEFINED_NAME "None"
-#define EFFECT_RAMBOW_NAME      "Rainbow"
+#define EFFECT_NONE_NAME        "None"
+#define EFFECT_RAINBOW_NAME      "Rainbow"
 #define EFFECT_RAINBOW_DELAY    20
-
-#define EFFECT_LIST EFFECT_RAMBOW_NAME
+#define EFFECT_BLINK_NAME       "Blink"
+#define EFFECT_BLINK_DELAY      500
 
 enum EFFECT {
-  EFFECT_NOT_DEFINED,
-  EFFECT_RAMBOW,
+  EFFECT_NOT_DEFINED = 0,
+  EFFECT_RAINBOW = 1,
+  EFFECT_BLINK = 2,
 };
 
 class AIRGBWBulb {
@@ -103,6 +104,7 @@ class AIRGBWBulb {
     bool      setColor();
 
     void      rainbowEffect(uint8_t p_index);
+    void      blinkEffect();
 };
 
 #endif

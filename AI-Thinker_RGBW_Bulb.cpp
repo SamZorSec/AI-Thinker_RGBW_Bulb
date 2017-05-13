@@ -32,16 +32,24 @@ void AIRGBWBulb::init(void) {
 }
 
 void AIRGBWBulb::loop(void) {
-  // TODO: handles effects
   switch (effect) {
     case EFFECT_NOT_DEFINED:
       break;
-    case EFFECT_RAMBOW:
+    case EFFECT_RAINBOW:
+      static unsigned long lastRainbowEffect = millis();
       static unsigned char count = 0;
-      static unsigned long last = millis();
-      if (millis() - last > EFFECT_RAINBOW_DELAY) {
-        last = millis();
+      lastRainbowEffect = millis();
+      if (millis() - lastRainbowEffect > EFFECT_RAINBOW_DELAY) {
+        lastRainbowEffect = millis();
         rainbowEffect(count++);
+      }
+      break;
+    case EFFECT_BLINK:
+      static unsigned long lastBlinkEffect = millis();
+      lastBlinkEffect = millis();
+      if (millis() - lastBlinkEffect > EFFECT_BLINK_DELAY) {
+        lastBlinkEffect = millis();
+        blinkEffect();
       }
       break;
   }
@@ -263,11 +271,14 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
 //   EFFECTS
 ///////////////////////////////////////////////////////////////////////////
 bool AIRGBWBulb::setEffect(const char* p_effect) {
-  if (strcmp(p_effect, EFFECT_NOT_DEFINED_NAME) == 0) {
+  if (strcmp(p_effect, EFFECT_NONE_NAME) == 0) {
     effect = EFFECT_NOT_DEFINED;
     return true;
-  } else if (strcmp(p_effect, EFFECT_RAMBOW_NAME) == 0) {
-    effect = EFFECT_RAMBOW;
+  } else if (strcmp(p_effect, EFFECT_RAINBOW_NAME) == 0) {
+    effect = EFFECT_RAINBOW;
+    return true;
+  } else if (strcmp(p_effect, EFFECT_BLINK_NAME) == 0) {
+    effect = EFFECT_BLINK;
     return true;
   }
 
@@ -287,6 +298,14 @@ void AIRGBWBulb::rainbowEffect(uint8_t p_index) {
   }
 }
 
+void AIRGBWBulb::blinkEffect() {
+  setState(!getState());
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//   DISCOVERY: GETTER/SETTER
+///////////////////////////////////////////////////////////////////////////
 bool AIRGBWBulb::isDiscovered(void) {
   return m_isDiscovered;
 }
@@ -294,6 +313,10 @@ bool AIRGBWBulb::isDiscovered(void) {
 void AIRGBWBulb::isDiscovered(bool p_isDiscovered) {
   m_isDiscovered = p_isDiscovered;
 }
+
+///////////////////////////////////////////////////////////////////////////
+//   GAMMA CORRECTION: GETTER/SETTER
+///////////////////////////////////////////////////////////////////////////
 
 bool AIRGBWBulb::isGammaCorrectionEnabled(void) {
   return m_isGammaCorrectionEnabled;
