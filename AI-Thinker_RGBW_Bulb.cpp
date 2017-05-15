@@ -32,24 +32,22 @@ void AIRGBWBulb::init(void) {
 }
 
 void AIRGBWBulb::loop(void) {
+  // TODO: handles effects
+  static unsigned long last = millis();
   switch (effect) {
     case EFFECT_NOT_DEFINED:
       break;
-    case EFFECT_RAINBOW:
-      static unsigned long lastRainbowEffect = millis();
+    case EFFECT_RAMBOW:
       static unsigned char count = 0;
-      lastRainbowEffect = millis();
-      if (millis() - lastRainbowEffect > EFFECT_RAINBOW_DELAY) {
-        lastRainbowEffect = millis();
+      if (millis() - last > EFFECT_RAINBOW_DELAY) {
+        last = millis();
         rainbowEffect(count++);
       }
       break;
     case EFFECT_BLINK:
-      static unsigned long lastBlinkEffect = millis();
-      lastBlinkEffect = millis();
-      if (millis() - lastBlinkEffect > EFFECT_BLINK_DELAY) {
-        lastBlinkEffect = millis();
-        blinkEffect();
+      if (millis() - last > EFFECT_BLINK_DELAY) {
+        last = millis();
+        setState(!getState());
       }
       break;
   }
@@ -176,7 +174,7 @@ bool AIRGBWBulb::setWhite(uint8_t p_white) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-//   COLOR TEMPERATURE
+//   GETTER/SETTER COLOR TEMPERATURE
 ///////////////////////////////////////////////////////////////////////////
 uint16_t AIRGBWBulb::getColorTemperature(void) {
   return m_colorTemperature;
@@ -271,11 +269,11 @@ bool AIRGBWBulb::setColorTemperature(uint16_t p_colorTemperature) {
 //   EFFECTS
 ///////////////////////////////////////////////////////////////////////////
 bool AIRGBWBulb::setEffect(const char* p_effect) {
-  if (strcmp(p_effect, EFFECT_NONE_NAME) == 0) {
+  if (strcmp(p_effect, EFFECT_NOT_DEFINED_NAME) == 0) {
     effect = EFFECT_NOT_DEFINED;
     return true;
   } else if (strcmp(p_effect, EFFECT_RAINBOW_NAME) == 0) {
-    effect = EFFECT_RAINBOW;
+    effect = EFFECT_RAMBOW;
     return true;
   } else if (strcmp(p_effect, EFFECT_BLINK_NAME) == 0) {
     effect = EFFECT_BLINK;
@@ -298,13 +296,8 @@ void AIRGBWBulb::rainbowEffect(uint8_t p_index) {
   }
 }
 
-void AIRGBWBulb::blinkEffect() {
-  setState(!getState());
-}
-
-
 ///////////////////////////////////////////////////////////////////////////
-//   DISCOVERY: GETTER/SETTER
+//   MQTT DISCOVERY
 ///////////////////////////////////////////////////////////////////////////
 bool AIRGBWBulb::isDiscovered(void) {
   return m_isDiscovered;
@@ -315,9 +308,8 @@ void AIRGBWBulb::isDiscovered(bool p_isDiscovered) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-//   GAMMA CORRECTION: GETTER/SETTER
+//   GAMMA CORRECTION
 ///////////////////////////////////////////////////////////////////////////
-
 bool AIRGBWBulb::isGammaCorrectionEnabled(void) {
   return m_isGammaCorrectionEnabled;
 }
