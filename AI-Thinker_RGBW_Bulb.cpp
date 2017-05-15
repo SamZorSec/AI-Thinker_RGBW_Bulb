@@ -33,15 +33,21 @@ void AIRGBWBulb::init(void) {
 
 void AIRGBWBulb::loop(void) {
   // TODO: handles effects
+  static unsigned long last = millis();
   switch (effect) {
     case EFFECT_NOT_DEFINED:
       break;
     case EFFECT_RAMBOW:
       static unsigned char count = 0;
-      static unsigned long last = millis();
       if (millis() - last > EFFECT_RAINBOW_DELAY) {
         last = millis();
         rainbowEffect(count++);
+      }
+      break;
+    case EFFECT_BLINK:
+      if (millis() - last > EFFECT_BLINK_DELAY) {
+        last = millis();
+        setState(!getState());
       }
       break;
   }
@@ -168,7 +174,7 @@ bool AIRGBWBulb::setWhite(uint8_t p_white) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
-//   COLOR TEMPERATURE
+//   GETTER/SETTER COLOR TEMPERATURE
 ///////////////////////////////////////////////////////////////////////////
 uint16_t AIRGBWBulb::getColorTemperature(void) {
   return m_colorTemperature;
@@ -266,8 +272,11 @@ bool AIRGBWBulb::setEffect(const char* p_effect) {
   if (strcmp(p_effect, EFFECT_NOT_DEFINED_NAME) == 0) {
     effect = EFFECT_NOT_DEFINED;
     return true;
-  } else if (strcmp(p_effect, EFFECT_RAMBOW_NAME) == 0) {
+  } else if (strcmp(p_effect, EFFECT_RAINBOW_NAME) == 0) {
     effect = EFFECT_RAMBOW;
+    return true;
+  } else if (strcmp(p_effect, EFFECT_BLINK_NAME) == 0) {
+    effect = EFFECT_BLINK;
     return true;
   }
 
@@ -287,6 +296,9 @@ void AIRGBWBulb::rainbowEffect(uint8_t p_index) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////
+//   MQTT DISCOVERY
+///////////////////////////////////////////////////////////////////////////
 bool AIRGBWBulb::isDiscovered(void) {
   return m_isDiscovered;
 }
@@ -295,6 +307,9 @@ void AIRGBWBulb::isDiscovered(bool p_isDiscovered) {
   m_isDiscovered = p_isDiscovered;
 }
 
+///////////////////////////////////////////////////////////////////////////
+//   GAMMA CORRECTION
+///////////////////////////////////////////////////////////////////////////
 bool AIRGBWBulb::isGammaCorrectionEnabled(void) {
   return m_isGammaCorrectionEnabled;
 }

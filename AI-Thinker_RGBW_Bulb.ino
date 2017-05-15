@@ -3,6 +3,8 @@
   See the README at https://github.com/mertenats/AI-Thinker_RGBW_Bulb for more information.
   Licensed under the MIT license.
 
+  Demonstration at https://www.youtube.com/watch?v=xIR5uHMbAZ4
+
   If you like the content of this repo, please add a star! Thank you!
 
   Samuel Mertenat
@@ -148,7 +150,7 @@ bool loadConfig() {
 
     bool isDiscovered = root["isDiscovered"];
     bulb.isDiscovered(isDiscovered);
-    
+
     bool isGammaCorrectionEnabled = root["isGammaCorrectionEnabled"];
     bulb.isGammaCorrectionEnabled(isGammaCorrectionEnabled);
 
@@ -463,7 +465,10 @@ void connectToMQTT() {
           root["white_value"] = true;
           root["color_temp"] = true;
           root["effect"] = true;
-          root["effect_list"] = EFFECT_LIST;
+          JsonArray& effect_list = root.createNestedArray("effect_list");
+          effect_list.add(EFFECT_NOT_DEFINED_NAME);
+          effect_list.add(EFFECT_RAINBOW_NAME);
+          effect_list.add(EFFECT_BLINK_NAME);
           root.printTo(jsonBuffer, sizeof(jsonBuffer));
           publishToMQTT(MQTT_CONFIG_TOPIC, jsonBuffer);
         }
@@ -533,7 +538,7 @@ void setup() {
 
 #if defined(SAVE_STATE)
   SPIFFS.begin();
-  // aSPIFFS.format(); // remove config
+  //SPIFFS.format(); // remove config
   loadConfig();
 #else
   bulb.init();
@@ -546,7 +551,6 @@ void setup() {
 #endif
 
   sprintf(MQTT_CLIENT_ID, "%06X", ESP.getChipId());
-  //sprintf(MQTT_CLIENT_ID, "AC3566");
 
 #if defined(MQTT_HOME_ASSISTANT_SUPPORT)
   sprintf(MQTT_CONFIG_TOPIC, MQTT_CONFIG_TOPIC_TEMPLATE, MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX, MQTT_CLIENT_ID);

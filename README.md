@@ -14,6 +14,9 @@ This is an alternative firmware for AI-Thinker RGBW LED bulbs, which uses MQTT i
 - Store the current state of the bulb in memory to prevent from losing its state in case of power cut (enabled, `#define SAVE_STATE` in `config.h`)
 - [Gamma correction](https://learn.adafruit.com/led-tricks-gamma-correction/the-issue) (enabled, `#define GAMMA_CORRECTION` in `config.h`)
 
+## Demonstration
+
+[![Home Assistant + MQTT + 10$ RGBW Bulb](images/Youtube.png)](https://www.youtube.com/watch?v=xIR5uHMbAZ4 "Home Assistant + MQTT + 10$ RGBW Bulb")
 
 ### Last Will and Testament
 
@@ -76,6 +79,8 @@ This firmware supports on/off, brightness, RGB colors, color temperature, white 
 5. Define `MQTT_MAX_PACKET_SIZE` to `512`instead of `128`in `Arduino/libraries/pubsubclient/src/PubSubClient.h`
 6. Solder wires from (bulb) `3V3` to `3V3` (FTDI), `GND` to `GND`, `RX` to `TX`, `TX` to `RX` and `ÌO0` to `GND`
 7. Flash the firmware (board `Generic ESP8266 module`, Upload Speed `115200` and Flash Size `1M (128K SPIFFS)`)
+
+**FOR SECURITY REASONS, IT'S HIGHLY RECOMMENDED TO HAVE A STRONG WI-FI PASSWORD, TO ENABLE TLS, TO DEACTIVATE THE DEBUGGING OUTPUT AND TO SET A PASSWORD FOR OTA.**
 
 ![Design](images/PCB.JPG)
 

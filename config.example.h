@@ -1,12 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////
 //   MISC
 ///////////////////////////////////////////////////////////////////////////
-#define FRIENDLY_NAME "AI RGBW Bulb"
+#define FRIENDLY_NAME "Ai-Thinker RGBW Bulb"
 
 ///////////////////////////////////////////////////////////////////////////
 //   WiFi
 ///////////////////////////////////////////////////////////////////////////
-#define WIFI_SSID     "" 
+#define WIFI_SSID     ""
 #define WIFI_PASSWORD ""
 
 ///////////////////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@
 // template: <discovery prefix>/light/<chip ID>/config, status, state or set
 #define MQTT_CONFIG_TOPIC_TEMPLATE            "%s/light/%s/config"
 #define MQTT_HOME_ASSISTANT_DISCOVERY_PREFIX  "homeassistant"
-#endif 
+#endif
 
 #define MQTT_STATE_TOPIC_TEMPLATE   "%s/rgbw/state"
 #define MQTT_COMMAND_TOPIC_TEMPLATE "%s/rgbw/set"
