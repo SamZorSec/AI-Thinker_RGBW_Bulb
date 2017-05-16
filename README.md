@@ -58,17 +58,17 @@ This firmware supports on/off, brightness, RGB colors, color temperature, white 
 }
 ```
 
-| Name          | Data Type | Values     | Description
-|---------------|-----------|------------|------------------------------------------------------------|
-| `brightness`  | Integer   | 0-255      | The brightness to set to                                   |
-| `color`       | Object    | -          | A dictionary with the below RGB values                     |
-| `color.r`     | Integer   | 0-255      | The red color to set to                                    |
-| `color.g`     | Integer   | 0-255      | The green color to set to                                  |
-| `color.b`     | Integer   | 0-255      | The blue color to set to                                   |
-| `state`       | Boolean   | true/false | The state of the light to set to                           |
-| `white_value` | Integer   | 0-255      | The white color to set to                                  |
-| `effect`      | String    | Rainbow    | The effect to set to                                       |
-| `color_temp`  | Integer   | 154-500    | The color temperature to set to                            |
+| Name          | Data Type | Values       | Description
+|---------------|-----------|--------------|------------------------------------------------------------|
+| `brightness`  | Integer   | 0-255        | The brightness to set to                                   |
+| `color`       | Object    | -            | A dictionary with the below RGB values                     |
+| `color.r`     | Integer   | 0-255        | The red color to set to                                    |
+| `color.g`     | Integer   | 0-255        | The green color to set to                                  |
+| `color.b`     | Integer   | 0-255        | The blue color to set to                                   |
+| `state`       | String    | ON/OFF       | The state of the light to set to                           |
+| `white_value` | Integer   | 0-255        | The white color to set to                                  |
+| `effect`      | String    | Rainbow/Blink| The effect to set to                                       |
+| `color_temp`  | Integer   | 154-500      | The color temperature to set to                            |
 
 ## How to
 1. Install the [Arduino IDE](https://www.arduino.cc/en/Main/Software) and the [ESP8266 core for Arduino](https://github.com/esp8266/Arduino)
