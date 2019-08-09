@@ -1,4 +1,5 @@
 # Alternative firmware for AI-Thinker RGBW bulbs
+**THIS REPOSITORY IS NOT MAINTAINED ANYMORE, SEE [ESPHome](https://esphome.io/) AS AN ALTERNATIVE.**
 
 This is an alternative firmware for AI-Thinker RGBW LED bulbs, which uses MQTT instead of the default Chinese mobile application. The bulb is a cheap (~12-18$) product available on sites like Aliexpress ([here](https://www.aliexpress.com/item/DIY-Wifi-LED-Bulb-E27-5W-AC110-240V-lampada-LED-Dimmable-Bulb-Lamp-Remote-Control-Led/32740055347.html?spm=2114.10010108.1000013.4.P25xWH&scm=1007.13339.33317.0&pvid=7153dc2f-cf5f-4aae-904a-0bbea7dd8130&tpp=1&aff_platform=link-c-tool&cpt=1494357650729&sk=ybuVN3n&aff_trace_key=36cdbdb111d04acf9cc7acdb2f38f2a8-1494357650729-08203-ybuVN3n)) and eBay ([here](http://www.ebay.com/itm/Noduino-Open-Light-LED-Smart-Bulb-Color-E27-7W-WiFi-ESP8266-MQTT-/222491267554?rmvSB=true) or [here](http://www.ebay.com/itm/2pcs-Lot-Noduino-Open-Light-LED-Smart-Bulb-Color-E27-7W-WiFi-ESP8266-MQTT-/222486566367?&rmvSB=true)), which can be easily reprogrammed as it is based on the popular ESP8266 Wi-Fi chip.
 
